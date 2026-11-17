@@ -1,0 +1,39 @@
+name: Bandit
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    permission: 
+        # Required for all workflows
+        security-events: write
+        # Only required for workflows in private repositories
+        actions: read
+        contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+      - name: Run Bandit
+        run: bandit -r . -f json -o bandit-report.json
+      - name: Perform Bandit Analysis
+        uses: PyCQA/bandit-action@v1
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v2
+        with:
+          name: bandit-report
+          path: bandit-report.json  
+
+# https://bandit.readthedocs.io/en/1.8.6/ci-cd/github-actions.html
